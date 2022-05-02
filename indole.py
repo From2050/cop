@@ -7,6 +7,10 @@
 def main():
     print('hellow')
 
+    print('this is test for vs stutio')
+    ##aaaaaa
+
+
 
 
 if __name__ == '__main__':
