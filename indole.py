@@ -7,50 +7,45 @@ import seaborn as sns
 from matplotlib.widgets import Slider
 
 def main():
-    print('hellow')
-    print('this is cop data plot')
 
     #filepath = "./2022_04_27_16_48_41/2022_04_27_16_48_41_insoleL.txt"
     filepath = "./2022_05_17_16_20_00_insoleR.txt"
 
-    with open(filepath,'r') as f:
-        
-        Atemp = np.zeros(227+4,dtype=int)   # time(4)  + CA(1) + framenumber(1)  +data(8*28 = 224) + 0A (1) 
-        Aframe = np.zeros(227+4,dtype=int)
-        index = 0
-        error = 0
-        F_error = 0
-        for line in f :
-            #print(line)
-            temp = line.rstrip().split(',')
-            for i in range(0,int(len(temp[1])),2):
-                if temp[1][i:i+2] == 'CA':
-                    if F_error :    F_error = 0
-                    else :          Aframe = np.vstack([Aframe, Atemp])
-                    time = temp[0].split('.')
-                    Atemp[0] = int(time[0][0:2])
-                    Atemp[1] = int(time[0][3:5])
-                    Atemp[2] = int(time[0][6:8])
-                    Atemp[3] = int(time[1][0:2])
-                    index = 0
-                    
-                else :
-                    if index == 227 :
+    def readfile(filepath):
+        with open(filepath,'r') as f:
+            
+            Atemp = np.zeros(227+4,dtype=int)   # time(4)  + CA(1) + framenumber(1)  +data(8*28 = 224) + 0A (1) 
+            Aframe = np.zeros(227+4,dtype=int)
+            index = 0
+            error = 0
+            F_error = 0
+            for line in f :
+                temp = line.rstrip().split(',')
+                for i in range(0,int(len(temp[1])),2):
+                    if temp[1][i:i+2] == 'CA':
+                        if F_error :    F_error = 0
+                        else :          Aframe = np.vstack([Aframe, Atemp])
+                        time = temp[0].split('.')
+                        Atemp[0] = int(time[0][0:2])
+                        Atemp[1] = int(time[0][3:5])
+                        Atemp[2] = int(time[0][6:8])
+                        Atemp[3] = int(time[1][0:2])
                         index = 0
-                        F_error = 1
-                        error = error + 1 
-                    Atemp[(4+index)] = int(temp[1][i:i+2],16)
-                    index = index + 1
-                
-                #    for i in range(0,int(len(temp[1])),2):
-                #        #if i == 0 : print(temp[1])
-                #        #Atemp[(4+i)] = bytes.fromhex(temp[1][2*i:2*i+2])
-                #        Atemp[(4+index)] = int(temp[1][i:i+2],16)
-                #        index = index + 1
-                #        #if i == 0 : print(Atemp[(4+i)])
+                        
+                    else :
+                        if index == 227 :
+                            index = 0
+                            F_error = 1
+                            error = error + 1 
+                        Atemp[(4+index)] = int(temp[1][i:i+2],16)
+                        index = index + 1
+        return Aframe[2:,6:-1], Aframe[2:,0:4]
 
-    Atemp = Aframe[2:,6:-1]
-    Atime = Aframe[2:,2:4]
+
+
+
+    Atemp, Atime = readfile(filepath)
+
     As = 60*60*100*Aframe[2:,0] + 60*100*Aframe[2:,1] + 100*Aframe[2:,2] + Aframe[2:,3] - (60*60*100*Aframe[2,0] + 60*100*Aframe[2,1] + 100*Aframe[2,2] + Aframe[2,3]) 
     frame_num_max = Atemp.shape[0]
     Atest = Atemp.reshape((frame_num_max,28,8))
